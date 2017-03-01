@@ -10,6 +10,11 @@ apply plugin: 'java'
 version='4.1.0-log4j2_7'
 group = 'net.logstash.log4j2'
 
+jar {
+    baseName = "log4j2-logstash-jsonevent-layout"
+    version='4.1.0-log4j2_6'
+}
+
 buildscript {
     dependencies {
         classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
