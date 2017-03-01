@@ -12,7 +12,7 @@ group = 'net.logstash.log4j2'
 
 jar {
     baseName = "log4j2-logstash-jsonevent-layout"
-    version='4.1.0-log4j2_6'
+    version='4.1.0-log4j2_7'
 }
 
 buildscript {
