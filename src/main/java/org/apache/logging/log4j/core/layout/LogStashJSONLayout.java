@@ -16,26 +16,19 @@
  */
 package org.apache.logging.log4j.core.layout;
 
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LogStashLogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.apache.logging.log4j.core.config.plugins.*;
-import org.apache.logging.log4j.core.impl.Log4jLogEvent;
 import org.apache.logging.log4j.core.util.KeyValuePair;
 import org.apache.logging.log4j.util.Strings;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Copy Pasta version of JsonLayout that uses a different JSON writer which adds
@@ -55,14 +48,18 @@ public class LogStashJSONLayout extends AbstractJacksonLayout {
     private final Map<String, String> additionalLogAttributes = new HashMap<>();
 
     protected LogStashJSONLayout(final Configuration config, final boolean locationInfo, final boolean properties,
-                                 final boolean encodeThreadContextAsList,
-                                 final boolean complete, final boolean compact, final boolean eventEol, final String headerPattern,
+                                 final boolean encodeThreadContextAsList, final boolean includeStacktrace,
+                                 final boolean complete, final boolean compact, final boolean eventEol,
+                                 final String headerPattern,
                                  final String footerPattern, final Charset charset,
                                  final Map<String, String> additionalLogAttributes) {
-        super(config, new LogStashJacksonFactory.JSON(encodeThreadContextAsList).newWriter(locationInfo, properties, compact),
-                charset, compact, complete, eventEol,
-                PatternLayout.createSerializer(config, null, headerPattern, DEFAULT_HEADER, null, false, false),
-                PatternLayout.createSerializer(config, null, footerPattern, DEFAULT_FOOTER, null, false, false));
+        super(config,
+              new LogStashJacksonFactory.JSON(encodeThreadContextAsList, includeStacktrace).newWriter(locationInfo,
+                                                                                                      properties,
+                                                                                                      compact),
+              charset, compact, complete, eventEol,
+              PatternLayout.createSerializer(config, null, headerPattern, DEFAULT_HEADER, null, false, false),
+              PatternLayout.createSerializer(config, null, footerPattern, DEFAULT_FOOTER, null, false, false));
         this.additionalLogAttributes.putAll(additionalLogAttributes);
     }
 
@@ -122,32 +119,25 @@ public class LogStashJSONLayout extends AbstractJacksonLayout {
 
     /**
      * Creates a JSON Layout.
-     * @param config
-     *            The plugin configuration.
-     * @param locationInfo
-     *            If "true", includes the location information in the generated JSON.
-     * @param properties
-     *            If "true", includes the thread context map in the generated JSON.
-     * @param propertiesAsList
-     *            If true, the thread context map is included as a list of map entry objects, where each entry has
-     *            a "key" attribute (whose value is the key) and a "value" attribute (whose value is the value).
-     *            Defaults to false, in which case the thread context map is included as a simple map of key-value
-     *            pairs.
-     * @param complete
-     *            If "true", includes the JSON header and footer, and comma between records.
-     * @param compact
-     *            If "true", does not use end-of-lines and indentation, defaults to "true".
-     * @param eventEol
-     *            If "true", forces an EOL after each log event (even if compact is "true"), defaults to "true". This
-     *            allows one even per line, even in compact mode.
-     * @param headerPattern
-     *            The header pattern, defaults to {@code "["} if null.
-     * @param footerPattern
-     *            The header pattern, defaults to {@code "]"} if null.
-     * @param charset
-     *            The character set to use, if {@code null}, uses "UTF-8".
-     * @param pairs
-     *            The addition pairs that will be added to JSON, if {@code null}, use empty Map.
+     *
+     * @param config The plugin configuration.
+     * @param locationInfo If "true", includes the location information in the generated JSON.
+     * @param properties If "true", includes the thread context map in the generated JSON.
+     * @param propertiesAsList If true, the thread context map is included as a list of map entry objects, where each
+     * entry has
+     * a "key" attribute (whose value is the key) and a "value" attribute (whose value is the value).
+     * Defaults to false, in which case the thread context map is included as a simple map of key-value
+     * pairs.
+     * @param complete If "true", includes the JSON header and footer, and comma between records.
+     * @param compact If "true", does not use end-of-lines and indentation, defaults to "true".
+     * @param eventEol If "true", forces an EOL after each log event (even if compact is "true"), defaults to "true".
+     * This
+     * allows one even per line, even in compact mode.
+     * @param headerPattern The header pattern, defaults to {@code "["} if null.
+     * @param footerPattern The header pattern, defaults to {@code "]"} if null.
+     * @param charset The character set to use, if {@code null}, uses "UTF-8".
+     * @param pairs The addition pairs that will be added to JSON, if {@code null}, use empty Map.
+     *
      * @return A JSON Layout.
      */
     @PluginFactory
@@ -157,6 +147,7 @@ public class LogStashJSONLayout extends AbstractJacksonLayout {
             @PluginAttribute(value = "locationInfo", defaultBoolean = false) final boolean locationInfo,
             @PluginAttribute(value = "properties", defaultBoolean = false) final boolean properties,
             @PluginAttribute(value = "propertiesAsList", defaultBoolean = false) final boolean propertiesAsList,
+            @PluginAttribute(value = "includeStacktrace", defaultBoolean = false) final boolean includeStacktrace,
             @PluginAttribute(value = "complete", defaultBoolean = false) final boolean complete,
             @PluginAttribute(value = "compact", defaultBoolean = true) final boolean compact,
             @PluginAttribute(value = "eventEol", defaultBoolean = true) final boolean eventEol,
@@ -186,13 +177,13 @@ public class LogStashJSONLayout extends AbstractJacksonLayout {
                 }
                 additionalLogAttributes.put(key, value);
             }
-
         }
 
         final boolean encodeThreadContextAsList = properties && propertiesAsList;
 
-        return new LogStashJSONLayout(config, locationInfo, properties, encodeThreadContextAsList, complete, compact, eventEol,
-                headerPattern, footerPattern, charset, additionalLogAttributes);
+        return new LogStashJSONLayout(config, locationInfo, properties, encodeThreadContextAsList, includeStacktrace,
+                                      complete, compact, eventEol, headerPattern, footerPattern, charset,
+                                      additionalLogAttributes);
     }
 
     /**
@@ -201,14 +192,15 @@ public class LogStashJSONLayout extends AbstractJacksonLayout {
      * @return A JSON Layout.
      */
     public static LogStashJSONLayout createDefaultLayout() {
-        return new LogStashJSONLayout(new DefaultConfiguration(), false, false, false, false, true, true,
-                DEFAULT_HEADER, DEFAULT_FOOTER, StandardCharsets.UTF_8, new HashMap<String,String>());
+        return new LogStashJSONLayout(new DefaultConfiguration(), false, false, false, false, false, true, true,
+                                      DEFAULT_HEADER, DEFAULT_FOOTER, StandardCharsets.UTF_8, new HashMap<>());
     }
 
     /**
      * Formats a {@link org.apache.logging.log4j.core.LogEvent}.
      *
      * @param event The LogEvent.
+     *
      * @return The XML representation of the LogEvent.
      */
     @Override
@@ -216,13 +208,11 @@ public class LogStashJSONLayout extends AbstractJacksonLayout {
         try {
             LogStashLogEvent logStashLogEvent = new LogStashLogEvent(event, additionalLogAttributes);
             return this.objectWriter.writeValueAsString(logStashLogEvent) + eol;
-        } catch (final JsonProcessingException e) {
+        }
+        catch (final JsonProcessingException e) {
             // Should this be an ISE or IAE?
             LOGGER.error(e);
             return Strings.EMPTY;
         }
     }
-
-
-
 }

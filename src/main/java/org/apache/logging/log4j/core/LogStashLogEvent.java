@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.apache.logging.log4j.message.Message;
+import org.apache.logging.log4j.util.ReadOnlyStringMap;
 
 /**
  * To serialize with mixin AND add two properties (@version and @timestamp) we
@@ -19,7 +20,7 @@ import org.apache.logging.log4j.message.Message;
  *
  * Created by jeremyfranklin-ross on 7/28/15.
  */
-public class LogStashLogEvent implements LogEvent{
+public class LogStashLogEvent implements LogEvent {
 
     static final String LOG_STASH_ISO8601_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
     static final DateFormat iso8601DateFormat = new SimpleDateFormat(LOG_STASH_ISO8601_TIMESTAMP_FORMAT);
@@ -44,6 +45,11 @@ public class LogStashLogEvent implements LogEvent{
     @Override
     public Map<String, String> getContextMap() {
         return wrappedLogEvent.getContextMap();
+    }
+
+    @Override
+    public ReadOnlyStringMap getContextData() {
+        return wrappedLogEvent.getContextData();
     }
 
     @Override

@@ -29,7 +29,7 @@ import java.util.Map;
 @JsonFilter("org.apache.logging.log4j.core.LogStashLogEvent")
 @JsonPropertyOrder({"@version", "timestamp", "timeMillis", "threadId", "threadName", "threadPriority", "level", "loggerName", "marker", "message", "thrown", XmlConstants.ELT_CONTEXT_MAP,
         JsonConstants.ELT_CONTEXT_STACK, "loggerFQCN", "Source", "endOfBatch" })
-abstract class LogStashLogEventMixIn extends LogEventMixIn {
+abstract class LogStashLogEventMixIn extends LogEventWithContextListMixIn {
 
     @JsonProperty("@timestamp")
     public abstract String getTimestamp();

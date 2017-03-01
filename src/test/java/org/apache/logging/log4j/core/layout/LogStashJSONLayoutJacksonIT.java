@@ -87,6 +87,7 @@ public class LogStashJSONLayoutJacksonIT {
                 true, //location
                 true, //properties
                 true, //propertiesAsList
+                true, //includeStacktrace
                 true, //complete
                 false, //compact
                 false, //eventEol
