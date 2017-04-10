@@ -1,16 +1,16 @@
 package org.apache.logging.log4j.core;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * To serialize with mixin AND add two properties (@version and @timestamp) we
@@ -41,6 +41,7 @@ public class LogStashLogEvent implements LogEvent {
     public String getTimestamp() {
         return iso8601DateFormat.format(new Date(this.getTimeMillis()));
     }
+
 
     @Override
     public Map<String, String> getContextMap() {
@@ -146,4 +147,10 @@ public class LogStashLogEvent implements LogEvent {
     public Map<String,String> getAdditionalLogAttributes() {
         return additionalLogAttributes;
     }
+
+    @Override
+    public LogEvent toImmutable() {
+        return this;
+    }
+
 }
