@@ -55,11 +55,11 @@ publishing {
                     url "${snapshotRepoURL}"
                 }
             } else {
-
-              url "http://nexus.goeuro.int/content/repositories/releases/"
-              credentials {
-                  username deploymentUser
-                  password deploymentPassword
+                if (project.hasProperty('releaseRepoName')) {
+                    name "$releaseRepoName"
+                }
+                if (project.hasProperty('releaseRepoURL')) {
+                    url "$releaseRepoURL"
               }
             }
         }
@@ -68,7 +68,7 @@ publishing {
 
 dependencies {
 
-    def log4j2Version = '2.6';
+    def log4j2Version = '2.6.2';
     compile "org.apache.logging.log4j:log4j-api:$log4j2Version"
     compile "org.apache.logging.log4j:log4j-core:$log4j2Version"
 
@@ -80,7 +80,7 @@ dependencies {
     testCompile 'commons-collections:commons-collections:3.+'
 
     // JACKSON for JSONification
-    def jacksonVersion = '2.+'
+    def jacksonVersion = '2.8.8'
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
